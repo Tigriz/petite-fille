@@ -10,6 +10,7 @@ ENV_FILE      := .env
 help:
 	@echo "Usage:"
 	@echo "  make install        # Install with Bun"
+	@echo "  make start          # Run in production"
 	@echo "  make dev            # Run in development"
 	@echo "  make docker-build   # Build Docker image"
 	@echo "  make docker-run     # Run Docker container"
