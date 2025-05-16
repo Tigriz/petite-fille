@@ -1,0 +1,20 @@
+{
+  "name": "village-notifier",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "watch": "bun --watch run src/index.ts",
+    "build": "bun build src/index.ts --outdir dist && cp .env dist/.env && cp src/config.json dist/config.json"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}
