@@ -14,9 +14,32 @@ const { filters } = loadConfig();
 console.log(`🔍 Loaded ${filters.length} filter(s)`);
 
 const ws = new WebSocket(WS_URL);
-ws.addEventListener("open", () => console.log("✅ WS open"));
-ws.addEventListener("error", (e) => console.error("❌ WS error:", e));
-ws.addEventListener("close", (e) => console.log(`🔒 WS closed (code=${e.code})`));
+
+// Set up ping interval to keep connection alive
+const PING_INTERVAL_MS = 60_000; // 60 seconds
+let pingInterval: ReturnType<typeof setInterval>;
+
+ws.addEventListener("open", () => {
+  console.log("✅ WebSocket connection established.");
+
+  // Start sending ping messages every minute
+  pingInterval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "ping" }));
+      console.log("📡 Ping sent to keep connection alive.");
+    }
+  }, PING_INTERVAL_MS);
+});
+
+ws.addEventListener("close", () => {
+  console.warn("❌ WebSocket connection closed.");
+  clearInterval(pingInterval);
+});
+
+ws.addEventListener("error", (err) => {
+  console.error("🚨 WebSocket error:", err);
+  clearInterval(pingInterval);
+});
 
 ws.addEventListener("message", async (ev) => {
   try {
