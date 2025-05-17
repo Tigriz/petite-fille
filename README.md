@@ -34,9 +34,6 @@ make docker-run
 
 ### Todos
 
-- debounce les notifs pour éviter le spam
-- faire différents type de filtres (sur le contenu du message, sur l'auteur, sur le titre d'un topic etc)
-- faire une blacklist sur le même format
 - un mécanisme pour relancer le websocket quand village meurt
-- .env et config nécessaires? un des 2 seulement? lequel?
-- faire un truc multiconfig/multiusers
+- filtres avancés (multiples conditions etc avec des fonctions)
+- faire un truc multiconfig/multiusers?
