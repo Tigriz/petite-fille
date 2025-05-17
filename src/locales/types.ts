@@ -1,7 +1,6 @@
 export interface LocaleStrings {
   errors: {
     missingEnvVars: string;
-    missingNtfyAuth: string;
     failedParseMessage: string;
     ntfyPushFailed: string;
     wsError: string;

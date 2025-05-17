@@ -21,23 +21,12 @@ console.log(t("logs.loadedFilters", {
   blacklistCount: Object.values(blacklist).flat().length,
 }));
 
-const ntfyConfig: NtfyConfig = NTFY_TOKEN 
-  ? {
-      url: NTFY_URL,
-      topic,
-      token: NTFY_TOKEN,
-    }
-  : NTFY_USER && NTFY_PASS
-  ? {
-      url: NTFY_URL,
-      topic,
-      user: NTFY_USER,
-      pass: NTFY_PASS,
-    }
-  : (() => {
-      console.error(t("errors.missingNtfyAuth"));
-      process.exit(1);
-    })();
+const ntfyConfig: NtfyConfig = {
+  url: NTFY_URL,
+  topic,
+  ...(NTFY_TOKEN ? { token: NTFY_TOKEN } : 
+      NTFY_USER && NTFY_PASS ? { user: NTFY_USER, pass: NTFY_PASS } : {})
+};
 
 const ws = new WebSocket(WS_URL);
 

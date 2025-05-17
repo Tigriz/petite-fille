@@ -1,23 +1,30 @@
 import { type EditEvent, type MessageEvent } from "../types/events";
 import { t } from "./locales";
 
-export type NtfyTokenAuth = {
+export type NtfyBaseConfig = {
   url: string;
   topic: string;
+};
+
+export type NtfyTokenAuth = NtfyBaseConfig & {
   token: string;
   user?: never;
   pass?: never;
 };
 
-export type NtfyBasicAuth = {
-  url: string;
-  topic: string;
+export type NtfyBasicAuth = NtfyBaseConfig & {
   token?: never;
   user: string;
   pass: string;
 };
 
-export type NtfyConfig = NtfyTokenAuth | NtfyBasicAuth;
+export type NtfyNoAuth = NtfyBaseConfig & {
+  token?: never;
+  user?: never;
+  pass?: never;
+};
+
+export type NtfyConfig = NtfyTokenAuth | NtfyBasicAuth | NtfyNoAuth;
 
 export const DEBOUNCE_DELAY = 10_000;
 export type PendingNotification = {

@@ -52,7 +52,8 @@ async function sendNtfyImmediate(
 
   if (config.token) {
     headers.Authorization = `Bearer ${config.token}`;
-  } else {
+  } 
+  else if (config.user && config.pass) {
     const creds = Buffer.from(`${config.user}:${config.pass}`).toString("base64");
     headers.Authorization = `Basic ${creds}`;
   }

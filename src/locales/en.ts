@@ -3,7 +3,6 @@ import type { LocaleStrings } from "./types";
 export const en: LocaleStrings = {
   errors: {
     missingEnvVars: "⚠️  Missing one of WS_URL or NTFY_URL in .env",
-    missingNtfyAuth: "⚠️  Missing either NTFY_TOKEN or both NTFY_USER and NTFY_PASS in .env",
     failedParseMessage: "⚠️  Failed to parse message:",
     ntfyPushFailed: "❌ ntfy push failed",
     wsError: "🚨 WebSocket error:",
