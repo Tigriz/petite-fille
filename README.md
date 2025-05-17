@@ -9,7 +9,8 @@ You must define a `.env` file with your variables. There is an `.env.example` th
 
 ### Normie
 
-Ask your favorite LLM how to install the tools to make it run on your operating system.
+Ask your favorite LLM how to install the tools to make it run on your operating system.  
+Paste your errors, give him information about your system and it will go fine.
 
 ### Native
 You will need [Bun](https://bun.sh/)
