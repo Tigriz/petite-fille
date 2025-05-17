@@ -12,11 +12,11 @@ You must define a `.env` file with your variables. There is an `.env.example` th
 Ask your favorite LLM how to install the tools to make it run on your operating system.  
 Paste your errors, give him information about your system and it will go fine.
 
-### Native
+### Bun
 You will need [Bun](https://bun.sh/)
 ```bash
-make install
-make run
+bun i
+bun run start
 ```
 
 ### Using Docker
