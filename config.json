@@ -1,5 +1,15 @@
 {
-  "filters": [
-    "example"
-  ]
+  "ntfy": {
+    "topic": "petite-fille-fd4bd158e788718c"
+  },
+  "filters": {
+    "content": [],
+    "author": [],
+    "topic": []
+  },
+  "blacklist": {
+    "content": [],
+    "author": [],
+    "topic": []
+  }
 }

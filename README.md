@@ -1,4 +1,10 @@
-# Village Notifier
+<img align="left" width="128" height="128" src="./icon.webp" alt="" />
+
+# ​ Petite Fille
+
+​ [![Bun](https://img.shields.io/badge/Bun-000?style=solid&logo=bun&logoColor=fff)](https://bun.sh/) [![TypeScript](https://img.shields.io/badge/Typescript-%23007ACC.svg?style=solid&logo=typescript&logoColor=fff)](https://www.typescriptlang.org)
+
+<br>
 
 ## Configuration
 
@@ -26,5 +32,11 @@ make docker-build
 make docker-run
 ```
 
+### Todos
 
-This project was created using `bun init` in bun v1.2.13. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- debounce les notifs pour éviter le spam
+- faire différents type de filtres (sur le contenu du message, sur l'auteur, sur le titre d'un topic etc)
+- faire une blacklist sur le même format
+- un mécanisme pour relancer le websocket quand village meurt
+- .env et config nécessaires? un des 2 seulement? lequel?
+- faire un truc multiconfig/multiusers

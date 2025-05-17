@@ -1,12 +1,14 @@
 {
-  "name": "village-notifier",
+  "name": "petite-fille",
+  "description": "A global notification system for village.cx",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "start": "bun run src/index.ts",
     "watch": "bun --watch run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist && cp .env dist/.env && cp src/config.json dist/config.json"
+    "build": "bun build src/index.ts --outdir dist && cp .env dist/.env && cp config.json dist/config.json",
+    "postinstall": "bun run src/scripts/setup-config.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

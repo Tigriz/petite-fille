@@ -20,24 +20,22 @@ export interface Topic {
   slug: string;
 }
 
-// If replies are included
 export interface RepliedMessage {
   id: number;
   content: string;
   user: Pick<User, "id" | "username" | "avatar">;
 }
 
-// Shared Data between message & edit
 export interface BaseMessageData {
   id: number;
   content: string;
-  files: string[];            // or a more specific file type
+  files: string[];
   topic: Topic;
   user: User;
-  createdAt: string;          // ISO timestamp
-  updatedAt: string | null;   // ISO timestamp or null
+  createdAt: string;
+  updatedAt: string | null;
   first: boolean;
   repliedMessageId: number | null;
   repliedMessage?: RepliedMessage;
-  poll?: unknown;             // adapt if you support polls
+  poll?: unknown;
 }
