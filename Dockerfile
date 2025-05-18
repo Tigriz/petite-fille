@@ -3,8 +3,9 @@ FROM oven/bun:latest AS base
 WORKDIR /app
 
 # 2. Install dependencies first (leveraging Docker cache)
-#    Copy only lockfile and package metadata
-COPY bun.lock package.json ./
+#    Copy package files and scripts needed for installation
+COPY package.json bun.lock ./
+COPY src/scripts/ ./src/scripts/
 RUN bun install --production
 
 # 3. Copy your source & config
@@ -22,4 +23,4 @@ ENV BUN_LOG_LEVEL=error
 # EXPOSE 3000
 
 # Default command: run your notifier
-CMD ["bun", "run", "src/index.ts"]
+CMD ["bun", "run", "start"]
