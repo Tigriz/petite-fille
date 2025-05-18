@@ -1,5 +1,39 @@
 import { type EditEvent, type MessageEvent } from "../types/events";
 import { t } from "./i18n";
+import { NodeHtmlMarkdown } from 'node-html-markdown';
+
+// Initialize NodeHtmlMarkdown with custom options
+const nhm = new NodeHtmlMarkdown(
+  /* options */ {
+    preferNativeParser: false,
+    keepDataImages: false,
+    codeFence: '```',
+    bulletMarker: '-',
+    codeBlockStyle: 'fenced',
+    emDelimiter: '_',
+    strongDelimiter: '**'
+  }
+);
+
+function convertHtmlToMarkdown(html: string): string {
+  if (!html.trim()) return '';
+  
+  try {
+    // Convert HTML to Markdown using node-html-markdown
+    let markdown = nhm.translate(html);
+    
+    // Post-processing cleanup
+    markdown = markdown
+      .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newlines
+      .replace(/^\s+|\s+$/g, ''); // Trim whitespace
+    
+    return markdown;
+  } catch (error) {
+    console.warn('Error converting HTML to Markdown:', error);
+    // Fallback to the original HTML if conversion fails
+    return html;
+  }
+}
 
 export type NtfyBaseConfig = {
   url: string;
@@ -64,26 +98,14 @@ export function groupSimilarNotifications(notifications: PendingNotification[]):
   return Array.from(groups.values());
 }
 
-export function snippetAroundMention(content: string, mentionPatterns: RegExp[]): string {
-  const lines = content.split("\n");
-  const idx = lines.findIndex((line) => mentionPatterns.some((rx) => rx.test(line)));
-  if (idx === -1) {
-    return content.length > 200 ? content.slice(0, 197) + "…" : content;
-  }
-
-  const pre = idx > 0 ? lines[idx - 1] : "";
-  const match = lines[idx];
-  const post = idx < lines.length - 1 ? lines[idx + 1] : "";
-
-  const snippet = [pre, match, post].filter(Boolean).join("\n").trim();
-  return snippet.length > 300 ? snippet.slice(0, 297) + "…" : snippet;
-}
-
 export function formatNotificationBody(msg: MessageEvent | EditEvent, mentionPatterns: RegExp[]): { title: string; body: string } {
   const { topic, user, content, repliedMessage } = {
     ...msg.data,
-    content: msg.data.content,
-    repliedMessage: msg.data.repliedMessage,
+    content: convertHtmlToMarkdown(msg.data.content),
+    repliedMessage: msg.data.repliedMessage ? {
+      ...msg.data.repliedMessage,
+      content: convertHtmlToMarkdown(msg.data.repliedMessage.content)
+    } : null,
     user: msg.data.user,
     topic: msg.data.topic,
   };
@@ -98,7 +120,9 @@ export function formatNotificationBody(msg: MessageEvent | EditEvent, mentionPat
     parts.push(`> ${replySnippet}`);
   }
 
-  parts.push(snippetAroundMention(content, mentionPatterns));
+  // Add the full content, truncated if too long
+  const truncatedContent = content.length > 300 ? content.slice(0, 297) + "…" : content;
+  parts.push(truncatedContent);
 
   return {
     title: topic.slug.replace(/-/g, " "),
