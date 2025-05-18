@@ -3,12 +3,13 @@ FROM oven/bun:latest AS base
 WORKDIR /app
 
 # 2. Install dependencies first (leveraging Docker cache)
-#    Copy package files and scripts needed for installation
+#    Copy package files, scripts, and config needed for installation
 COPY package.json bun.lock ./
 COPY src/scripts/ ./src/scripts/
+COPY config.json ./
 RUN bun install --production
 
-# 3. Copy your source & config
+# 3. Copy remaining source files
 COPY . .
 
 # 4. Build step (optional bundling—Bun can run TS directly, so you can skip this)
