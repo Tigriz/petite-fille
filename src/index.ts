@@ -52,7 +52,10 @@ function setupWebSocket() {
         ntfyConfig,
         t("notifications.wsInitialConnection"),
         t("notifications.wsInitialConnectionBody"),
-        undefined
+        {
+          priority: 3,  // Normal priority for initial connection
+          tags: ['rocket', 'system']
+        }
       );
     } else {
       // Reconnection notification
@@ -60,7 +63,10 @@ function setupWebSocket() {
         ntfyConfig,
         t("notifications.wsReconnected"),
         t("notifications.wsReconnectedBody", { siteName }),
-        undefined
+        {
+          priority: 4,  // High priority for reconnection
+          tags: ['white_check_mark', 'system']
+        }
       );
     }
     wasConnectedBefore = true;
@@ -85,7 +91,10 @@ function setupWebSocket() {
         ntfyConfig,
         t("notifications.wsDisconnected"),
         t("notifications.wsDisconnectedBody", { siteName }),
-        undefined
+        {
+          priority: 5,  // Urgent priority for disconnection
+          tags: ['warning', 'system']
+        }
       );
     }
     
@@ -111,12 +120,26 @@ function setupWebSocket() {
         return;
       }
 
-      const matchesFilter = 
-        filters.content.some((r) => r.test(content)) ||
-        filters.author.some((r) => r.test(user.username)) ||
-        filters.topic.some((r) => r.test(topic.slug));
+      // Determine which filter matched
+      const matchedByContent = filters.content.some((r) => r.test(content));
+      const matchedByAuthor = filters.author.some((r) => r.test(user.username));
+      const matchedByTopic = filters.topic.some((r) => r.test(topic.slug));
 
-      if (!matchesFilter) return;
+      if (!matchedByContent && !matchedByAuthor && !matchedByTopic) return;
+
+      // Determine primary match category for the second tag
+      let category: string;
+      let emojiTag: string;
+      if (matchedByContent) {
+        category = 'content';
+        emojiTag = 'speech_balloon'; // 💬 for content matches
+      } else if (matchedByAuthor) {
+        category = 'author';
+        emojiTag = 'bust_in_silhouette'; // 👤 for author matches
+      } else {
+        category = 'topic';
+        emojiTag = 'bookmark'; // 🔖 for topic matches
+      }
 
       console.log(t("logs.eventDetected", { type: msg.type.toUpperCase() }), {
         content: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
@@ -131,7 +154,11 @@ function setupWebSocket() {
         ntfyConfig,
         title,
         body,
-        clickUrl
+        {
+          click: clickUrl,
+          priority: 3, // Normal priority for matched messages
+          tags: [emojiTag, category]
+        }
       );
     } catch (err) {
       console.warn(t("errors.failedParseMessage"), err);

@@ -32,12 +32,16 @@ export type PendingNotification = {
   body: string;
   actionUrl?: string;
   timestamp: number;
+  priority?: 1 | 2 | 3 | 4 | 5;
+  tags?: string[];
 };
 
 export type NotificationGroup = {
   title: string;
   bodies: string[];
   actionUrl?: string;
+  priority?: 1 | 2 | 3 | 4 | 5;
+  tags?: string[];
 };
 
 export function groupSimilarNotifications(notifications: PendingNotification[]): NotificationGroup[] {
@@ -49,7 +53,9 @@ export function groupSimilarNotifications(notifications: PendingNotification[]):
       groups.set(key, {
         title: notif.title,
         bodies: [],
-        actionUrl: notif.actionUrl
+        actionUrl: notif.actionUrl,
+        priority: notif.priority,
+        tags: notif.tags
       });
     }
     groups.get(key)!.bodies.push(notif.body);

@@ -21,7 +21,7 @@
     "wsDisconnectedBody": "Lost connection to {{siteName}} - Attempting to reconnect...",
     "wsReconnected": "✅ Connection Restored",
     "wsReconnectedBody": "Successfully reconnected to {{siteName}}",
-    "wsInitialConnection": "🚀 Service Started",
+    "wsInitialConnection": "Service Started",
     "wsInitialConnectionBody": "Petite Fille is now running and monitoring messages"
   }
 } 

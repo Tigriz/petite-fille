@@ -21,7 +21,7 @@
     "wsDisconnectedBody": "Connexion perdue avec {{siteName}} - Tentative de reconnexion...",
     "wsReconnected": "✅ Connexion Rétablie",
     "wsReconnectedBody": "Reconnexion réussie à {{siteName}}",
-    "wsInitialConnection": "🚀 Service Démarré",
+    "wsInitialConnection": "Service Démarré",
     "wsInitialConnectionBody": "Petite Fille est maintenant en cours d'exécution et surveille les messages"
   }
 } 

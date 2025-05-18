@@ -3,17 +3,25 @@ import { DEBOUNCE_DELAY, type PendingNotification, type NotificationGroup, group
 let pendingNotifications: PendingNotification[] = [];
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
+type NtfyHeaders = {
+  priority?: 1 | 2 | 3 | 4 | 5;
+  tags?: string[];
+  click?: string;  // Using 'click' to match ntfy's header name convention
+};
+
 export async function sendNtfy(
   config: NtfyConfig,
   title: string,
   body: string,
-  actionUrl?: string,
+  headers: NtfyHeaders = {}
 ) {
   pendingNotifications.push({
     title,
     body,
-    actionUrl,
-    timestamp: Date.now()
+    actionUrl: headers.click,
+    timestamp: Date.now(),
+    priority: headers.priority,
+    tags: headers.tags
   });
 
   if (!debounceTimeout) {
@@ -25,7 +33,11 @@ export async function sendNtfy(
           config,
           group.title,
           group.bodies.join("\n\n---\n\n"),
-          group.actionUrl,
+          {
+            click: group.actionUrl,
+            priority: group.priority,
+            tags: group.tags
+          }
         );
       }
 
@@ -39,28 +51,28 @@ async function sendNtfyImmediate(
   config: NtfyConfig,
   title: string,
   body: string,
-  actionUrl?: string,
+  headers: NtfyHeaders = {}
 ) {
   const url = `${config.url}/${config.topic}`;
-  const headers: Record<string, string> = {
+  
+  // Build all headers in a single object
+  const ntfyHeaders: Record<string, string> = {
     "Content-Type": "text/plain",
-    Title: title,
-    Markdown: "yes",
+    "Title": title,
+    "Markdown": "yes",
+    "Priority": (headers.priority ?? 3).toString(),
+    ...(headers.tags?.length ? { "Tags": headers.tags.join(',') } : {}),
+    ...(headers.click ? { "Click": headers.click } : {}),
+    ...(config.token 
+      ? { "Authorization": `Bearer ${config.token}` }
+      : config.user && config.pass
+      ? { "Authorization": `Basic ${Buffer.from(`${config.user}:${config.pass}`).toString("base64")}` }
+      : {})
   };
-
-  if (actionUrl) headers["Click"] = actionUrl;
-
-  if (config.token) {
-    headers.Authorization = `Bearer ${config.token}`;
-  } 
-  else if (config.user && config.pass) {
-    const creds = Buffer.from(`${config.user}:${config.pass}`).toString("base64");
-    headers.Authorization = `Basic ${creds}`;
-  }
 
   const resp = await fetch(url, {
     method: "POST",
-    headers,
+    headers: ntfyHeaders,
     body,
   });
 
