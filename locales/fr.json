@@ -11,10 +11,15 @@
     "wsClosed": "❌ Connexion WebSocket fermée.",
     "pingSent": "📡 Ping envoyé pour maintenir la connexion.",
     "eventDetected": "🚨 {{type}} détecté :",
-    "ntfyPushed": "✅ ntfy envoyé"
+    "ntfyPushed": "✅ ntfy envoyé",
+    "wsRetrying": "🔄 Tentative de reconnexion (essai {{attempt}}) dans {{delay}} secondes..."
   },
   "notifications": {
     "by": "Par {{username}}",
-    "replyingTo": "En réponse à ({{username}})"
+    "replyingTo": "En réponse à ({{username}})",
+    "wsDisconnected": "⚠️ Connexion Perdue",
+    "wsDisconnectedBody": "Connexion perdue avec village.cx - Tentative de reconnexion...",
+    "wsReconnected": "✅ Connexion Rétablie",
+    "wsReconnectedBody": "Reconnexion réussie à village.cx"
   }
 } 
