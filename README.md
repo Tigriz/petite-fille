@@ -34,7 +34,5 @@ make docker-run
 
 ### Todos
 
-- un mécanisme pour relancer le websocket quand village meurt
-- filtres avancés (multiples conditions etc avec des fonctions)
-- faire un truc multiconfig/multiusers?
-- parse messages and remove html
+- Advanced filters (functions)
+- Multiconfig/users
