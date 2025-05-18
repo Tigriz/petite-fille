@@ -1,5 +1,5 @@
 import { type EditEvent, type MessageEvent } from "../types/events";
-import { t } from "./locales";
+import { t } from "./i18n";
 
 export type NtfyBaseConfig = {
   url: string;

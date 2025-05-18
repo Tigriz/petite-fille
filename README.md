@@ -37,3 +37,4 @@ make docker-run
 - un mécanisme pour relancer le websocket quand village meurt
 - filtres avancés (multiples conditions etc avec des fonctions)
 - faire un truc multiconfig/multiusers?
+- parse messages and remove html

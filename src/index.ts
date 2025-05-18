@@ -3,7 +3,7 @@ import { loadConfig } from "./config";
 import { isMessageOrEdit, type EditEvent, type MessageEvent, type WsEvent } from "../types/events";
 import { formatNotificationBody, type NtfyConfig } from "./utils";
 import { sendNtfy } from "./notifications";
-import { setLocale, t } from "./locales";
+import { setLocale, t } from "./i18n";
 
 loadEnv();
 
