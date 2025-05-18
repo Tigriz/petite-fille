@@ -13,6 +13,9 @@ if (!WS_URL || !NTFY_URL) {
   process.exit(1);
 }
 
+// Extract site name from BASE_URL (e.g., "village.cx" from "https://village.cx")
+const siteName = BASE_URL ? new URL(BASE_URL).hostname : "village.cx";
+
 setLocale(LOCALE as "en" | "fr");
 
 const config = loadConfig();
@@ -43,12 +46,20 @@ function setupWebSocket() {
     console.log(t("logs.wsConnected"));
     retryAttempt = 0; // Reset retry attempt counter on successful connection
     
-    // Notify about reconnection if this isn't the first connection
-    if (wasConnectedBefore) {
+    if (!wasConnectedBefore) {
+      // Initial connection notification
+      await sendNtfy(
+        ntfyConfig,
+        t("notifications.wsInitialConnection"),
+        t("notifications.wsInitialConnectionBody"),
+        undefined
+      );
+    } else {
+      // Reconnection notification
       await sendNtfy(
         ntfyConfig,
         t("notifications.wsReconnected"),
-        t("notifications.wsReconnectedBody"),
+        t("notifications.wsReconnectedBody", { siteName }),
         undefined
       );
     }
@@ -73,7 +84,7 @@ function setupWebSocket() {
       await sendNtfy(
         ntfyConfig,
         t("notifications.wsDisconnected"),
-        t("notifications.wsDisconnectedBody"),
+        t("notifications.wsDisconnectedBody", { siteName }),
         undefined
       );
     }

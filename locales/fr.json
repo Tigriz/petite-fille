@@ -18,8 +18,10 @@
     "by": "Par {{username}}",
     "replyingTo": "En réponse à ({{username}})",
     "wsDisconnected": "⚠️ Connexion Perdue",
-    "wsDisconnectedBody": "Connexion perdue avec village.cx - Tentative de reconnexion...",
+    "wsDisconnectedBody": "Connexion perdue avec {{siteName}} - Tentative de reconnexion...",
     "wsReconnected": "✅ Connexion Rétablie",
-    "wsReconnectedBody": "Reconnexion réussie à village.cx"
+    "wsReconnectedBody": "Reconnexion réussie à {{siteName}}",
+    "wsInitialConnection": "🚀 Service Démarré",
+    "wsInitialConnectionBody": "Petite Fille est maintenant en cours d'exécution et surveille les messages"
   }
 } 

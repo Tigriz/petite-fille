@@ -18,8 +18,10 @@
     "by": "By {{username}}",
     "replyingTo": "Replying to ({{username}})",
     "wsDisconnected": "⚠️ Connection Lost",
-    "wsDisconnectedBody": "Lost connection to village.cx - Attempting to reconnect...",
+    "wsDisconnectedBody": "Lost connection to {{siteName}} - Attempting to reconnect...",
     "wsReconnected": "✅ Connection Restored",
-    "wsReconnectedBody": "Successfully reconnected to village.cx"
+    "wsReconnectedBody": "Successfully reconnected to {{siteName}}",
+    "wsInitialConnection": "🚀 Service Started",
+    "wsInitialConnectionBody": "Petite Fille is now running and monitoring messages"
   }
 } 
