@@ -1,6 +1,6 @@
 # Makefile
 
-APP_NAME      := village-notifier
+APP_NAME      := petite-fille
 IMAGE_NAME    := $(APP_NAME):latest
 ENV_FILE      := .env
 
