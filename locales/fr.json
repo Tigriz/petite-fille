@@ -17,11 +17,11 @@
   "notifications": {
     "by": "Par {{username}}",
     "replyingTo": "En réponse à ({{username}})",
-    "wsDisconnected": "⚠️ Connexion Perdue",
+    "wsDisconnected": "Connexion perdue",
     "wsDisconnectedBody": "Connexion perdue avec {{siteName}} - Tentative de reconnexion...",
-    "wsReconnected": "✅ Connexion Rétablie",
+    "wsReconnected": "Connexion retablie",
     "wsReconnectedBody": "Reconnexion réussie à {{siteName}}",
-    "wsInitialConnection": "Service Démarré",
+    "wsInitialConnection": "Petite Fille demarre",
     "wsInitialConnectionBody": "Petite Fille est maintenant en cours d'exécution et surveille les messages"
   }
 } 
