@@ -39,6 +39,13 @@ docker-run:
 	  --env-file $(ENV_FILE) \
 	  $(IMAGE_NAME)
 
+docker-run-detached:
+	@echo "▶️  Running Docker container from '$(IMAGE_NAME)' in detached mode..."
+	docker run --rm -d \
+	  --env-file $(ENV_FILE) \
+	  $(IMAGE_NAME)
+
+
 clean:
 	@echo "🧹 Cleaning up build artifacts..."
 	# If you used bun build/dist, remove it:
