@@ -53,7 +53,7 @@ function setupWebSocket() {
         t("notifications.wsInitialConnection"),
         t("notifications.wsInitialConnectionBody"),
         {
-          priority: 3,  // Normal priority for initial connection
+          priority: 1,
           tags: ['rocket', 'system']
         }
       );
@@ -64,7 +64,7 @@ function setupWebSocket() {
         t("notifications.wsReconnected"),
         t("notifications.wsReconnectedBody", { siteName }),
         {
-          priority: 4,  // High priority for reconnection
+          priority: 1,
           tags: ['white_check_mark', 'system']
         }
       );
@@ -92,7 +92,7 @@ function setupWebSocket() {
         t("notifications.wsDisconnected"),
         t("notifications.wsDisconnectedBody", { siteName }),
         {
-          priority: 5,  // Urgent priority for disconnection
+          priority: 1,
           tags: ['warning', 'system']
         }
       );
@@ -156,7 +156,7 @@ function setupWebSocket() {
         body,
         {
           click: clickUrl,
-          priority: 3, // Normal priority for matched messages
+          priority: 3,
           tags: [emojiTag, category]
         }
       );
