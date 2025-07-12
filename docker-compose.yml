@@ -1,7 +1,7 @@
 services:
-  village-notifier:
+  petite-fille:
     build: .
-    container_name: village-notifier
+    container_name: petite-fille
     restart: unless-stopped
     environment:
       - BASE_URL=${BASE_URL:-https://village.cx}
