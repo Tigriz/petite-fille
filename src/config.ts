@@ -43,6 +43,8 @@ export type AppConfig = NtfyInstanceConfig[];
 let currentConfig: AppConfig = [];
 let configChangeCallbacks: ((config: AppConfig) => void)[] = [];
 let configReloadCallbacks: ((config: AppConfig) => void)[] = [];
+let lastModifiedTime = 0;
+let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
 export function loadConfig(): AppConfig {
   const configPath = join(__dirname, "../config.json");
@@ -125,7 +127,16 @@ export function startConfigWatcher() {
   console.log(`🔍 Watching for config changes: ${configPath}`);
   console.log(`📁 Current working directory: ${process.cwd()}`);
   console.log(`📁 Config file exists: ${existsSync(configPath)}`);
-  
+
+  // Get initial modification time
+  try {
+    const stats = require('fs').statSync(configPath);
+    lastModifiedTime = stats.mtime.getTime();
+    console.log(`📅 Initial file modification time: ${new Date(lastModifiedTime).toISOString()}`);
+  } catch (error) {
+    console.warn('⚠️ Could not get initial file stats, will use polling fallback');
+  }
+
   // Try native file watching
   try {
     const watcher = watch(configPath, (eventType, filename) => {
@@ -134,11 +145,25 @@ export function startConfigWatcher() {
         reloadConfig();
       }
     });
-    
     console.log('✅ File watching enabled');
-    
   } catch (error) {
     console.error('❌ File watching failed:', (error as Error).message);
     console.error('Hot reload will not be available');
   }
+
+  // Always enable polling as a fallback for VM/docker environments
+  pollingInterval = setInterval(() => {
+    try {
+      const stats = require('fs').statSync(configPath);
+      const currentModifiedTime = stats.mtime.getTime();
+      if (currentModifiedTime > lastModifiedTime) {
+        console.log(`🔔 Polling detected file change: ${new Date(currentModifiedTime).toISOString()}`);
+        lastModifiedTime = currentModifiedTime;
+        reloadConfig();
+      }
+    } catch (error) {
+      // File might not exist or be temporarily inaccessible
+    }
+  }, 2000); // Check every 2 seconds
+  console.log('✅ Polling fallback enabled (every 2s)');
 }
