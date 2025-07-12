@@ -1,0 +1,50 @@
+[
+  {
+    "name": "default",
+    "url": "https://ntfy.sh",
+    "topic": "your-public-topic",
+    "auth": { "type": "none" },
+    "filters": {
+      "content": ["tigr", "igri", "important"],
+      "author": ["admin"],
+      "topic": ["announcements"]
+    },
+    "blacklist": {
+      "content": ["spam"],
+      "author": ["bot"],
+      "topic": ["off-topic"]
+    }
+  },
+  {
+    "name": "private",
+    "url": "https://ntfy.sh",
+    "topic": "your-private-topic",
+    "auth": { "type": "token", "token": "tk_yourtokenhere" },
+    "filters": {
+      "content": ["urgent"],
+      "author": ["moderator"],
+      "topic": ["news"]
+    },
+    "blacklist": {
+      "content": ["advertisement"],
+      "author": ["spammer"],
+      "topic": ["junk"]
+    }
+  },
+  {
+    "name": "custom-server",
+    "url": "https://your-ntfy-server.com",
+    "topic": "custom-topic",
+    "auth": { "type": "basic", "user": "username", "pass": "password" },
+    "filters": {
+      "content": ["custom"],
+      "author": [],
+      "topic": []
+    },
+    "blacklist": {
+      "content": [],
+      "author": [],
+      "topic": []
+    }
+  }
+] 

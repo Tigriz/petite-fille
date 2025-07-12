@@ -1,6 +1,7 @@
 import { type EditEvent, type MessageEvent } from "../types/events";
 import { t } from "./i18n";
 import { NodeHtmlMarkdown } from 'node-html-markdown';
+import { type NtfyInstanceConfig } from "./config";
 
 // Initialize NodeHtmlMarkdown with custom options
 const nhm = new NodeHtmlMarkdown(
@@ -35,31 +36,6 @@ function convertHtmlToMarkdown(html: string): string {
   }
 }
 
-export type NtfyBaseConfig = {
-  url: string;
-  topic: string;
-};
-
-export type NtfyTokenAuth = NtfyBaseConfig & {
-  token: string;
-  user?: never;
-  pass?: never;
-};
-
-export type NtfyBasicAuth = NtfyBaseConfig & {
-  token?: never;
-  user: string;
-  pass: string;
-};
-
-export type NtfyNoAuth = NtfyBaseConfig & {
-  token?: never;
-  user?: never;
-  pass?: never;
-};
-
-export type NtfyConfig = NtfyTokenAuth | NtfyBasicAuth | NtfyNoAuth;
-
 export const DEBOUNCE_DELAY = 10_000;
 export type PendingNotification = {
   title: string;
@@ -68,6 +44,7 @@ export type PendingNotification = {
   timestamp: number;
   priority?: 1 | 2 | 3 | 4 | 5;
   tags?: string[];
+  config: NtfyInstanceConfig;
 };
 
 export type NotificationGroup = {
@@ -76,6 +53,7 @@ export type NotificationGroup = {
   actionUrl?: string;
   priority?: 1 | 2 | 3 | 4 | 5;
   tags?: string[];
+  config: NtfyInstanceConfig;
 };
 
 export function groupSimilarNotifications(notifications: PendingNotification[]): NotificationGroup[] {
@@ -89,7 +67,8 @@ export function groupSimilarNotifications(notifications: PendingNotification[]):
         bodies: [],
         actionUrl: notif.actionUrl,
         priority: notif.priority,
-        tags: notif.tags
+        tags: notif.tags,
+        config: notif.config
       });
     }
     groups.get(key)!.bodies.push(notif.body);

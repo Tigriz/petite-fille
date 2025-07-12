@@ -1,7 +1,9 @@
-import { DEBOUNCE_DELAY, type PendingNotification, type NotificationGroup, groupSimilarNotifications, type NtfyConfig } from "./utils";
+import { DEBOUNCE_DELAY, type PendingNotification, type NotificationGroup, groupSimilarNotifications } from "./utils";
+import { type NtfyInstanceConfig } from "./config";
 
-let pendingNotifications: PendingNotification[] = [];
-let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
+// Track pending notifications and debounce timers per configuration
+const pendingNotificationsByConfig = new Map<NtfyInstanceConfig, PendingNotification[]>();
+const debounceTimersByConfig = new Map<NtfyInstanceConfig, ReturnType<typeof setTimeout> | null>();
 
 type NtfyHeaders = {
   priority?: 1 | 2 | 3 | 4 | 5;
@@ -9,46 +11,84 @@ type NtfyHeaders = {
   click?: string;  // Using 'click' to match ntfy's header name convention
 };
 
-export async function sendNtfy(
-  config: NtfyConfig,
+export async function sendNtfyToAll(
+  configs: NtfyInstanceConfig[],
   title: string,
   body: string,
   headers: NtfyHeaders = {}
 ) {
+  for (const cfg of configs) {
+    try {
+      await sendNtfy(cfg, title, body, headers);
+      console.log(`✅ ntfy pushed to ${cfg.name}`);
+    } catch (error) {
+      console.error(`❌ ntfy push failed for ${cfg.name}:`, error);
+    }
+  }
+}
+
+export async function sendNtfy(
+  config: NtfyInstanceConfig,
+  title: string,
+  body: string,
+  headers: NtfyHeaders = {}
+) {
+  // Get or create pending notifications array for this config
+  if (!pendingNotificationsByConfig.has(config)) {
+    pendingNotificationsByConfig.set(config, []);
+  }
+  const pendingNotifications = pendingNotificationsByConfig.get(config)!;
+
+  // Add notification to this config's pending list
   pendingNotifications.push({
     title,
     body,
     actionUrl: headers.click,
     timestamp: Date.now(),
     priority: headers.priority,
-    tags: headers.tags
+    tags: headers.tags,
+    config: config
   });
 
-  if (!debounceTimeout) {
-    debounceTimeout = setTimeout(async () => {
-      const groupedNotifications = groupSimilarNotifications(pendingNotifications);
-      
-      for (const group of groupedNotifications) {
-        await sendNtfyImmediate(
-          config,
-          group.title,
-          group.bodies.join("\n\n---\n\n"),
-          {
-            click: group.actionUrl,
-            priority: group.priority,
-            tags: group.tags
-          }
-        );
-      }
-
-      pendingNotifications = [];
-      debounceTimeout = null;
-    }, DEBOUNCE_DELAY);
+  // Get or create debounce timer for this config
+  if (!debounceTimersByConfig.has(config)) {
+    debounceTimersByConfig.set(config, null);
   }
+  let debounceTimer = debounceTimersByConfig.get(config);
+
+  // Clear existing timer if it exists
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+
+  // Set new debounce timer for this config
+  debounceTimer = setTimeout(async () => {
+    const groupedNotifications = groupSimilarNotifications(pendingNotifications);
+    
+    // Send all grouped notifications for this config
+    for (const group of groupedNotifications) {
+      await sendNtfyImmediate(
+        config,
+        group.title,
+        group.bodies.join("\n\n---\n\n"),
+        {
+          click: group.actionUrl,
+          priority: group.priority,
+          tags: group.tags
+        }
+      );
+    }
+
+    // Clear this config's pending notifications and timer
+    pendingNotificationsByConfig.set(config, []);
+    debounceTimersByConfig.set(config, null);
+  }, DEBOUNCE_DELAY);
+
+  debounceTimersByConfig.set(config, debounceTimer);
 }
 
 async function sendNtfyImmediate(
-  config: NtfyConfig,
+  config: NtfyInstanceConfig,
   title: string,
   body: string,
   headers: NtfyHeaders = {}
@@ -63,10 +103,10 @@ async function sendNtfyImmediate(
     "Priority": (headers.priority ?? 3).toString(),
     ...(headers.tags?.length ? { "Tags": headers.tags.join(',') } : {}),
     ...(headers.click ? { "Click": headers.click } : {}),
-    ...(config.token 
-      ? { "Authorization": `Bearer ${config.token}` }
-      : config.user && config.pass
-      ? { "Authorization": `Basic ${Buffer.from(`${config.user}:${config.pass}`).toString("base64")}` }
+    ...(config.auth.type === "token" && config.auth.token
+      ? { "Authorization": `Bearer ${config.auth.token}` }
+      : config.auth.type === "basic" && config.auth.user && config.auth.pass
+      ? { "Authorization": `Basic ${Buffer.from(`${config.auth.user}:${config.auth.pass}`).toString("base64")}` }
       : {})
   };
 

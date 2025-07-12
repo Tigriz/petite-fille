@@ -1,13 +1,16 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { randomBytes } from "crypto";
-import { config as loadEnv } from "dotenv";
 
-loadEnv();
-
-interface Config {
-  ntfy: {
-    topic: string;
+interface NtfyConfig {
+  name: string;
+  url: string;
+  topic: string;
+  auth: {
+    type: "none" | "token" | "basic";
+    token?: string;
+    user?: string;
+    pass?: string;
   };
   filters: {
     content: string[];
@@ -25,38 +28,58 @@ function generateRandomTopic(): string {
   return `petite-fille-${randomBytes(8).toString('hex')}`;
 }
 
-function formatNtfyUrl(topic: string): string {
-  const ntfyUrl = process.env.NTFY_URL?.replace(/\/$/, '') || 'https://ntfy.sh';
-  return `${ntfyUrl}/${topic}`;
-}
-
 function setupConfig() {
   const configPath = join(process.cwd(), "config.json");
-  let config: Config;
+  let configs: NtfyConfig[];
 
   try {
     const existingConfig = JSON.parse(readFileSync(configPath, "utf-8"));
-    config = {
-      ntfy: {
-        topic: existingConfig.ntfy?.topic || generateRandomTopic()
-      },
-      filters: existingConfig.filters || { content: [], author: [], topic: [] },
-      blacklist: existingConfig.blacklist || { content: [], author: [], topic: [] }
-    };
+    
+    // Handle legacy format (single topic)
+    if (existingConfig.ntfy?.topic && !Array.isArray(existingConfig)) {
+      configs = [{
+        name: "default",
+        url: "https://ntfy.sh",
+        topic: existingConfig.ntfy.topic,
+        auth: { type: "none" },
+        filters: existingConfig.filters || { content: [], author: [], topic: [] },
+        blacklist: existingConfig.blacklist || { content: [], author: [], topic: [] }
+      }];
+    } else if (Array.isArray(existingConfig)) {
+      // New format (array of configs)
+      configs = existingConfig;
+    } else {
+      // No config found, create default
+      configs = [{
+        name: "default",
+        url: "https://ntfy.sh",
+        topic: generateRandomTopic(),
+        auth: { type: "none" },
+        filters: { content: [], author: [], topic: [] },
+        blacklist: { content: [], author: [], topic: [] }
+      }];
+    }
   } catch {
-    config = {
-      ntfy: {
-        topic: generateRandomTopic()
-      },
+    // No config file exists, create default
+    configs = [{
+      name: "default",
+      url: "https://ntfy.sh",
+      topic: generateRandomTopic(),
+      auth: { type: "none" },
       filters: { content: [], author: [], topic: [] },
       blacklist: { content: [], author: [], topic: [] }
-    };
+    }];
   }
 
-  writeFileSync(configPath, JSON.stringify(config, null, 2));
+  writeFileSync(configPath, JSON.stringify(configs, null, 2));
   console.log("✅ Config file setup complete");
-  console.log(`📢 NTFY Topic: ${config.ntfy.topic}`);
-  console.log(`🔗 NTFY URL: ${formatNtfyUrl(config.ntfy.topic)}`);
+  
+  configs.forEach(cfg => {
+    console.log(`📢 Config: ${cfg.name}`);
+    console.log(`🔗 NTFY URL: ${cfg.url}/${cfg.topic}`);
+    console.log(`🔐 Auth: ${cfg.auth.type}`);
+    console.log("");
+  });
 }
 
 setupConfig(); 

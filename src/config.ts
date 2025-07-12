@@ -1,57 +1,60 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-interface FilterRules {
+export interface FilterRules {
   content: RegExp[];
   author: RegExp[];
   topic: RegExp[];
 }
 
-export interface AppConfig {
-  ntfy: {
-    topic: string;
-  };
+export interface RawFilterRules {
+  content: string[];
+  author: string[];
+  topic: string[];
+}
+
+export interface NtfyAuthConfig {
+  type: "none" | "token" | "basic";
+  token?: string;
+  user?: string;
+  pass?: string;
+}
+
+export interface NtfyInstanceConfig {
+  name: string;
+  url: string;
+  topic: string;
+  auth: NtfyAuthConfig;
   filters: FilterRules;
   blacklist: FilterRules;
 }
 
-interface RawConfig {
-  ntfy: {
-    topic: string;
-  };
-  filters: {
-    content: string[];
-    author: string[];
-    topic: string[];
-  };
-  blacklist: {
-    content: string[];
-    author: string[];
-    topic: string[];
-  };
+export interface RawNtfyInstanceConfig {
+  name: string;
+  url: string;
+  topic: string;
+  auth: NtfyAuthConfig;
+  filters: RawFilterRules;
+  blacklist: RawFilterRules;
 }
 
-function convertToRegExp(patterns: string[]): RegExp[] {
-  return patterns.map(pat => new RegExp(pat, "i"));
-}
+export type AppConfig = NtfyInstanceConfig[];
 
 export function loadConfig(): AppConfig {
   const raw = readFileSync(join(__dirname, "../config.json"), "utf-8");
-  const json = JSON.parse(raw) as RawConfig;
-  
-  return {
-    ntfy: {
-      topic: json.ntfy.topic
-    },
+  const json = JSON.parse(raw) as RawNtfyInstanceConfig[];
+
+  return json.map(cfg => ({
+    ...cfg,
     filters: {
-      content: convertToRegExp(json.filters.content),
-      author: convertToRegExp(json.filters.author),
-      topic: convertToRegExp(json.filters.topic)
+      content: cfg.filters.content.map(pat => new RegExp(pat, "i")),
+      author: cfg.filters.author.map(pat => new RegExp(pat, "i")),
+      topic: cfg.filters.topic.map(pat => new RegExp(pat, "i")),
     },
     blacklist: {
-      content: convertToRegExp(json.blacklist.content),
-      author: convertToRegExp(json.blacklist.author),
-      topic: convertToRegExp(json.blacklist.topic)
+      content: cfg.blacklist.content.map(pat => new RegExp(pat, "i")),
+      author: cfg.blacklist.author.map(pat => new RegExp(pat, "i")),
+      topic: cfg.blacklist.topic.map(pat => new RegExp(pat, "i")),
     }
-  };
+  }));
 }

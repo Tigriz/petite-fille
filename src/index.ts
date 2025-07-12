@@ -1,14 +1,14 @@
 import { config as loadEnv } from "dotenv";
-import { loadConfig } from "./config";
+import { loadConfig, type NtfyInstanceConfig } from "./config";
 import { isMessageOrEdit, type EditEvent, type MessageEvent, type WsEvent } from "../types/events";
-import { formatNotificationBody, type NtfyConfig } from "./utils";
-import { sendNtfy } from "./notifications";
+import { formatNotificationBody } from "./utils";
+import { sendNtfy, sendNtfyToAll } from "./notifications";
 import { setLocale, t } from "./i18n";
 
 loadEnv();
 
-const { BASE_URL, WS_URL, NTFY_URL, NTFY_USER, NTFY_PASS, NTFY_TOKEN, LOCALE = "en" } = process.env;
-if (!WS_URL || !NTFY_URL) {
+const { BASE_URL, WS_URL, LOCALE = "en" } = process.env;
+if (!WS_URL) {
   console.error(t("errors.missingEnvVars"));
   process.exit(1);
 }
@@ -18,16 +18,12 @@ const siteName = BASE_URL ? new URL(BASE_URL).hostname : "village.cx";
 
 setLocale(LOCALE as "en" | "fr");
 
-const config = loadConfig();
-const { filters, blacklist } = config;
-const { topic } = config.ntfy;
+const ntfyConfigs: NtfyInstanceConfig[] = loadConfig();
 
-const ntfyConfig: NtfyConfig = {
-  url: NTFY_URL,
-  topic,
-  ...(NTFY_TOKEN ? { token: NTFY_TOKEN } : 
-      NTFY_USER && NTFY_PASS ? { user: NTFY_USER, pass: NTFY_PASS } : {})
-};
+console.log(`📡 Loaded ${ntfyConfigs.length} ntfy configuration(s):`);
+ntfyConfigs.forEach(cfg => {
+  console.log(`  - ${cfg.name}: ${cfg.url}/${cfg.topic} (${cfg.auth.type} auth)`);
+});
 
 const PING_INTERVAL_MS = 60_000;
 const INITIAL_RETRY_DELAY_MS = 1000;
@@ -48,8 +44,8 @@ function setupWebSocket() {
     
     if (!wasConnectedBefore) {
       // Initial connection notification
-      await sendNtfy(
-        ntfyConfig,
+      await sendNtfyToAll(
+        ntfyConfigs,
         t("notifications.wsInitialConnection"),
         t("notifications.wsInitialConnectionBody"),
         {
@@ -59,8 +55,8 @@ function setupWebSocket() {
       );
     } else {
       // Reconnection notification
-      await sendNtfy(
-        ntfyConfig,
+      await sendNtfyToAll(
+        ntfyConfigs,
         t("notifications.wsReconnected"),
         t("notifications.wsReconnectedBody", { siteName }),
         {
@@ -87,8 +83,8 @@ function setupWebSocket() {
     
     // Only notify on first disconnection
     if (retryAttempt === 0) {
-      await sendNtfy(
-        ntfyConfig,
+      await sendNtfyToAll(
+        ntfyConfigs,
         t("notifications.wsDisconnected"),
         t("notifications.wsDisconnectedBody", { siteName }),
         {
@@ -114,52 +110,64 @@ function setupWebSocket() {
 
       const { content, topic, id: messageId, user } = msg.data;
 
-      if (blacklist.content.some((r) => r.test(content)) ||
+      // For each config, check its filters/blacklist and send if matched
+      for (const cfg of ntfyConfigs) {
+        const { filters, blacklist } = cfg;
+        if (
+          blacklist.content.some((r) => r.test(content)) ||
           blacklist.author.some((r) => r.test(user.username)) ||
-          blacklist.topic.some((r) => r.test(topic.slug))) {
-        return;
-      }
-
-      // Determine which filter matched
-      const matchedByContent = filters.content.some((r) => r.test(content));
-      const matchedByAuthor = filters.author.some((r) => r.test(user.username));
-      const matchedByTopic = filters.topic.some((r) => r.test(topic.slug));
-
-      if (!matchedByContent && !matchedByAuthor && !matchedByTopic) return;
-
-      // Determine primary match category for the second tag
-      let category: string;
-      let emojiTag: string;
-      if (matchedByContent) {
-        category = 'content';
-        emojiTag = 'speech_balloon'; // 💬 for content matches
-      } else if (matchedByAuthor) {
-        category = 'author';
-        emojiTag = 'bust_in_silhouette'; // 👤 for author matches
-      } else {
-        category = 'topic';
-        emojiTag = 'bookmark'; // 🔖 for topic matches
-      }
-
-      console.log(t("logs.eventDetected", { type: msg.type.toUpperCase() }), {
-        content: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
-        author: user.username,
-        topic: topic.slug
-      });
-
-      const clickUrl = `${BASE_URL}/village/${topic.id}-${topic.slug}?m=${messageId}`;
-      const { title, body } = formatNotificationBody(msg, filters.content);
-
-      await sendNtfy(
-        ntfyConfig,
-        title,
-        body,
-        {
-          click: clickUrl,
-          priority: 3,
-          tags: [emojiTag, category]
+          blacklist.topic.some((r) => r.test(topic.slug))
+        ) {
+          continue;
         }
-      );
+
+        // Determine which filter matched
+        const matchedByContent = filters.content.some((r) => r.test(content));
+        const matchedByAuthor = filters.author.some((r) => r.test(user.username));
+        const matchedByTopic = filters.topic.some((r) => r.test(topic.slug));
+
+        if (!matchedByContent && !matchedByAuthor && !matchedByTopic) continue;
+
+        // Determine primary match category for the second tag
+        let category: string;
+        let emojiTag: string;
+        if (matchedByContent) {
+          category = 'content';
+          emojiTag = 'speech_balloon';
+        } else if (matchedByAuthor) {
+          category = 'author';
+          emojiTag = 'bust_in_silhouette';
+        } else {
+          category = 'topic';
+          emojiTag = 'bookmark';
+        }
+
+        console.log(t("logs.eventDetected", { type: msg.type.toUpperCase() }), {
+          config: cfg.name,
+          content: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+          author: user.username,
+          topic: topic.slug
+        });
+
+        const clickUrl = `${BASE_URL}/village/${topic.id}-${topic.slug}?m=${messageId}`;
+        const { title, body } = formatNotificationBody(msg, filters.content);
+
+        try {
+          await sendNtfy(
+            cfg,
+            title,
+            body,
+            {
+              click: clickUrl,
+              priority: 3,
+              tags: [emojiTag, category]
+            }
+          );
+          console.log(`✅ ntfy pushed to ${cfg.name}`);
+        } catch (error) {
+          console.error(`❌ ntfy push failed for ${cfg.name}:`, error);
+        }
+      }
     } catch (err) {
       console.warn(t("errors.failedParseMessage"), err);
     }
