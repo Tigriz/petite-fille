@@ -10,6 +10,16 @@
 
 You can edit the regular expressions that trigger notifications in `config.json`.
 
+### Hot Reload Support
+
+The application supports hot reloading of the configuration file. When you modify `config.json`, the application will automatically detect the changes and reload the configuration without restarting.
+
+**Features:**
+- 🔄 Automatic config reload on file changes
+- 📝 Real-time configuration updates
+- 🐳 Works with Docker volume mounting
+- ✅ No service interruption during config changes
+
 ### Multi-Config Support
 
 The application now supports multiple ntfy configurations. Each config can have its own filters and blacklist rules. The config file is a flat array:
@@ -86,10 +96,32 @@ bun run start
 
 ### Using Docker
 You will need [Docker](https://docker.com/).
+
+#### Option 1: Using Makefile
 ```bash
 make docker-build
 make docker-run
 ```
+
+#### Option 2: Using Docker Compose (Recommended for hot reload)
+```bash
+# Build and run with hot reload support
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the service
+docker-compose down
+```
+
+The Docker Compose setup includes:
+- 🔄 **Hot reload support** via volume mounting
+- 📁 **Shared volume** for `config.json` 
+- 🔧 **Environment variable** support
+- 🏥 **Health checks** for monitoring
+
+**Note:** When using Docker Compose, changes to `config.json` will be automatically detected and reloaded without restarting the container.
 
 ### Todos
 

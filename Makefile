@@ -12,8 +12,10 @@ help:
 	@echo "  make install        # Install with Bun"
 	@echo "  make start          # Run in production"
 	@echo "  make dev            # Run in development"
-	@echo "  make docker-build   # Build Docker image"
-	@echo "  make docker-run     # Run Docker container"
+	@echo "  make docker-build   # Build Docker image with docker-compose"
+	@echo "  make docker-run     # Run Docker container with hot reload"
+	@echo "  make docker-stop    # Stop Docker container"
+	@echo "  make docker-logs    # View Docker logs"
 	@echo "  make clean          # Clean build artifacts"
 
 install:
@@ -30,23 +32,28 @@ dev:
 	bun run watch
 
 docker-build:
-	@echo "🐳 Building Docker image '$(IMAGE_NAME)'..."
-	docker build -t $(IMAGE_NAME) .
+	@echo "🐳 Building Docker image with docker-compose..."
+	docker-compose build --no-cache
 
 docker-run:
-	@echo "▶️  Running Docker container from '$(IMAGE_NAME)'..."
-	docker run --rm -it \
-	  --env-file $(ENV_FILE) \
-	  $(IMAGE_NAME)
+	@echo "▶️  Running Docker container with hot reload..."
+	docker-compose up -d
 
-docker-run-detached:
-	@echo "▶️  Running Docker container from '$(IMAGE_NAME)' in detached mode..."
-	docker run --rm -d \
-	  --env-file $(ENV_FILE) \
-	  $(IMAGE_NAME)
+docker-stop:
+	@echo "⏹️  Stopping Docker container..."
+	docker-compose down
 
+docker-logs:
+	@echo "📋 Viewing Docker logs..."
+	docker-compose logs -f
+
+docker-restart:
+	@echo "🔄 Restarting Docker container..."
+	docker-compose restart
 
 clean:
 	@echo "🧹 Cleaning up build artifacts..."
 	# If you used bun build/dist, remove it:
 	rm -rf dist
+	# Also clean up Docker containers and images
+	docker-compose down --rmi all --volumes --remove-orphans

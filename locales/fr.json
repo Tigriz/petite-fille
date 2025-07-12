@@ -22,6 +22,8 @@
     "wsReconnected": "Connexion retablie",
     "wsReconnectedBody": "Reconnexion réussie à {{siteName}}",
     "wsInitialConnection": "Petite Fille demarre",
-    "wsInitialConnectionBody": "Petite Fille est maintenant en cours d'exécution et surveille les messages"
+    "wsInitialConnectionBody": "Petite Fille est maintenant en cours d'exécution et surveille les messages",
+    "configReloaded": "Configuration rechargée",
+    "configReloadedBody": "La configuration a été mise à jour avec {{configCount}} config(s) : {{configNames}}"
   }
 } 

@@ -22,6 +22,8 @@
     "wsReconnected": "Connection Restored",
     "wsReconnectedBody": "Successfully reconnected to {{siteName}}",
     "wsInitialConnection": "Service Started",
-    "wsInitialConnectionBody": "Petite Fille is now running and monitoring messages"
+    "wsInitialConnectionBody": "Petite Fille is now running and monitoring messages",
+    "configReloaded": "Configuration Reloaded",
+    "configReloadedBody": "Configuration has been updated with {{configCount}} config(s): {{configNames}}"
   }
 } 

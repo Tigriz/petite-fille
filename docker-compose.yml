@@ -1,0 +1,21 @@
+services:
+  village-notifier:
+    build: .
+    container_name: village-notifier
+    restart: unless-stopped
+    environment:
+      - BASE_URL=${BASE_URL:-https://village.cx}
+      - WS_URL=${WS_URL}
+      - LOCALE=${LOCALE:-en}
+    volumes:
+      # Mount the config file for hot reload
+      - ./config.json:/app/config.json:ro
+      # Optional: mount the entire config directory if you want to support multiple config files
+      # - ./config:/app/config:ro
+    # Optional: add healthcheck
+    healthcheck:
+      test: ["CMD", "bun", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s 

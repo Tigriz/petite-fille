@@ -1,5 +1,5 @@
 import { config as loadEnv } from "dotenv";
-import { loadConfig, type NtfyInstanceConfig } from "./config";
+import { loadConfig, getCurrentConfig, onConfigChange, onConfigReload, startConfigWatcher, type NtfyInstanceConfig } from "./config";
 import { isMessageOrEdit, type EditEvent, type MessageEvent, type WsEvent } from "../types/events";
 import { formatNotificationBody } from "./utils";
 import { sendNtfy, sendNtfyToAll } from "./notifications";
@@ -18,11 +18,37 @@ const siteName = BASE_URL ? new URL(BASE_URL).hostname : "village.cx";
 
 setLocale(LOCALE as "en" | "fr");
 
-const ntfyConfigs: NtfyInstanceConfig[] = loadConfig();
+// Load initial config
+let ntfyConfigs: NtfyInstanceConfig[] = loadConfig();
 
 console.log(`📡 Loaded ${ntfyConfigs.length} ntfy configuration(s):`);
 ntfyConfigs.forEach(cfg => {
   console.log(`  - ${cfg.name}: ${cfg.url}/${cfg.topic} (${cfg.auth.type} auth)`);
+});
+
+// Start config watcher for hot reload
+startConfigWatcher();
+
+// Register config change callback
+onConfigChange((newConfig) => {
+  ntfyConfigs = newConfig;
+  console.log('🔄 Updated to new configuration');
+});
+
+// Register config reload callback for system notifications
+onConfigReload(async (newConfig) => {
+  await sendNtfyToAll(
+    newConfig,
+    t("notifications.configReloaded"),
+    t("notifications.configReloadedBody", { 
+      configCount: newConfig.length,
+      configNames: newConfig.map(cfg => cfg.name).join(", ")
+    }),
+    {
+      priority: 2,
+      tags: ['gear', 'system']
+    }
+  );
 });
 
 const PING_INTERVAL_MS = 60_000;
