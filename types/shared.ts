@@ -38,4 +38,5 @@ export interface BaseMessageData {
   repliedMessageId: number | null;
   repliedMessage?: RepliedMessage;
   poll?: unknown;
+  villageId: string;
 }

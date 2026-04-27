@@ -40,7 +40,7 @@ onConfigReload(async (newConfig) => {
   await sendNtfyToAll(
     newConfig,
     t("notifications.configReloaded"),
-    t("notifications.configReloadedBody", { 
+    t("notifications.configReloadedBody", {
       configCount: newConfig.length,
       configNames: newConfig.map(cfg => cfg.name).join(", ")
     }),
@@ -67,7 +67,7 @@ function setupWebSocket() {
   ws.addEventListener("open", async () => {
     console.log(t("logs.wsConnected"));
     retryAttempt = 0; // Reset retry attempt counter on successful connection
-    
+
     if (!wasConnectedBefore) {
       // Initial connection notification
       await sendNtfyToAll(
@@ -92,7 +92,7 @@ function setupWebSocket() {
       );
     }
     wasConnectedBefore = true;
-    
+
     // Setup ping interval
     clearInterval(pingInterval);
     pingInterval = setInterval(() => {
@@ -106,7 +106,7 @@ function setupWebSocket() {
   ws.addEventListener("close", async () => {
     console.warn(t("logs.wsClosed"));
     cleanup();
-    
+
     // Only notify on first disconnection
     if (retryAttempt === 0) {
       await sendNtfyToAll(
@@ -119,7 +119,7 @@ function setupWebSocket() {
         }
       );
     }
-    
+
     scheduleReconnect();
   });
 
@@ -134,7 +134,7 @@ function setupWebSocket() {
       const msg = JSON.parse(ev.data as string) as WsEvent;
       if (!isMessageOrEdit(msg)) return;
 
-      const { content, topic, id: messageId, user } = msg.data;
+      const { content, topic, id: messageId, user, villageId } = msg.data;
 
       // For each config, check its filters/blacklist and send if matched
       for (const cfg of ntfyConfigs) {
@@ -175,7 +175,7 @@ function setupWebSocket() {
           topic: topic.slug
         });
 
-        const clickUrl = `${BASE_URL}/village/${topic.id}-${topic.slug}?m=${messageId}`;
+        const clickUrl = `${BASE_URL}/${villageId}/${topic.id}-${topic.slug}?m=${messageId}`;
         const { title, body } = formatNotificationBody(msg, filters.content);
 
         try {
@@ -212,9 +212,9 @@ function scheduleReconnect() {
     INITIAL_RETRY_DELAY_MS * Math.pow(RETRY_BACKOFF_FACTOR, retryAttempt),
     MAX_RETRY_DELAY_MS
   );
-  
+
   console.log(t("logs.wsRetrying", { attempt: retryAttempt + 1, delay: Math.round(delay / 1000) }));
-  
+
   clearTimeout(retryTimeout);
   retryTimeout = setTimeout(() => {
     retryAttempt++;
